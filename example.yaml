@@ -1,10 +1,16 @@
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: go-custom-path-server
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
     app: go-custom-path-server
   name: go-custom-path-server
+  namespace: go-custom-path-server
 spec:
   replicas: 1
   selector:
@@ -17,7 +23,7 @@ spec:
         app: go-custom-path-server
     spec:
       containers:
-      - image: harbor.ops.verysmart.house/library/go-custom-path-server:latest
+      - image: registry.lab.verysmart.house/images/go-custom-path-server:1
         name: go-custom-path-server
         resources:
           requests:
@@ -37,10 +43,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  creationTimestamp: null
   labels:
     app: go-custom-path-server
   name: go-custom-path-server
+  namespace: go-custom-path-server
 spec:
   ports:
   - port: 8080
@@ -56,11 +62,8 @@ metadata:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     ingress.kubernetes.io/force-ssl-redirect: "true"
-  labels:
   name: go-custom-path-server
   namespace: go-custom-path-server
-  resourceVersion: "18086539"
-  uid: 3cbca129-d92a-4a79-bd59-5bc5d98fd49e
 spec:
   ingressClassName: contour-external
   rules:
@@ -78,5 +81,3 @@ spec:
   - hosts:
     - go.gideaworx.io
     secretName: go-gideaworx-io-tls
-status:
-  loadBalancer: {}

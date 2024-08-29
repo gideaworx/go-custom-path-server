@@ -25,44 +25,17 @@ resources:
   - name: image-builder
     icon: docker
     type: registry-image
-    check_every: 168h
+    check_every: 999999h
     source:
       repository: concourse/oci-build-task
-      tag: "0.11"
-
-  - name: task-runner-image
-    icon: docker
-    type: registry-image
-    source:
-      repository: harbor.ops.verysmart.house/library/helm-chart-task-runner
+      tag: "0.11.1"
 
   - name: target-registry
     type: registry-image
     source:
-      repository: harbor.ops.verysmart.house/library/go-import-redirector
-      username: ((harbor-robot.username))
-      password: ((harbor-robot.password))
-
-  - name: image-release
-    icon: github
-    type: github-release
-    source:
-      owner: gideaworx
-      repository: go-custom-path-server
-      access_token: ((go-custom-path-server-access-token))
-
-  - name: image-version
-    icon: database
-    type: semver
-    check_every: 999999h
-    source:
-      initial_version: "0.0.1"
-      bucket: versions
-      key: go-custom-path-server
-      access_key_id: ((minio.access-key-id))
-      secret_access_key: ((minio.secret-access-key))
-      region_name: us-east-1
-      endpoint: ((minio.url))
+      repository: registry.lab.verysmart.house/library/go-custom-path-server
+      username: ((harbor-user))
+      password: ((harbor-password))
 
 jobs:
   - name: build-image
@@ -82,28 +55,20 @@ jobs:
           - get: image-version
           - get: image-builder
           - get: task-runner-image
-      - task: build-image
-        image: image-builder
-        file: source/ci/build-image-task.yaml
-        privileged: true
-      - task: build-version
-        image: task-runner-image
-        file: source/ci/build-version-task.yaml
-      - put: image-version
+      - in_parallel:
+          - task: build-image
+            image: image-builder
+            file: source/ci/build-image-task.yaml
+            privileged: true
+          - load_var: version
+            file: source/.git/describe_ref
+            reveal: true
+      - put: target-registry
         attempts: 5
         params:
-          file: updated-version/version
-      - in_parallel:
-          - put: target-registry
-            attempts: 5
-            params:
-              image: image/image.tar
-              additional_tags: updated-version/version
-            get_params:
-              skip_download: true
-          - put: image-release
-            params:
-              name: updated-version/version
-              tag: updated-version/version
-              commitish: source/.git/ref
-              generate_release_notes: true
+          image: image/image.tar
+          version: ((.:version))
+          bump_aliases: true
+        get_params:
+          skip_download: true
+

@@ -13,7 +13,6 @@ caches:
 
 params:
   CONTEXT: source
-  DOCKERFILE: source/image/Dockerfile
   IMAGE_ARG_build_image: base-image-go/image.tar
   IMAGE_ARG_run_image: base-image-run/image.tar
 

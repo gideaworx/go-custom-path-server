@@ -52,9 +52,7 @@ jobs:
             trigger: true
             params:
               format: oci
-          - get: image-version
           - get: image-builder
-          - get: task-runner-image
       - in_parallel:
           - task: build-image
             image: image-builder

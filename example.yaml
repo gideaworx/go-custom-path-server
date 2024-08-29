@@ -1,0 +1,82 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: go-custom-path-server
+  name: go-custom-path-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-custom-path-server
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: go-custom-path-server
+    spec:
+      containers:
+      - image: harbor.ops.verysmart.house/library/go-custom-path-server:latest
+        name: go-custom-path-server
+        resources:
+          requests:
+            memory: 32Mi
+            cpu: 50m
+          limits:
+            memory: 64Mi
+            cpu: 100m
+        env:
+          - name: GO_CPS_LISTEN_ADDRESS
+            value: ":8080"
+          - name: GO_CPS_IMPORT_PATH
+            value: "go.gideaworx.io/*"
+          - name: GO_CPS_REPOSITORY
+            value: "https://github.com/gideaworx/*"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: go-custom-path-server
+  name: go-custom-path-server
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: go-custom-path-server
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+  labels:
+  name: go-custom-path-server
+  namespace: go-custom-path-server
+  resourceVersion: "18086539"
+  uid: 3cbca129-d92a-4a79-bd59-5bc5d98fd49e
+spec:
+  ingressClassName: contour-external
+  rules:
+  - host: go.gideaworx.io
+    http:
+      paths:
+      - backend:
+          service:
+            name: go-custom-path-server
+            port:
+              number: 8080
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - go.gideaworx.io
+    secretName: go-gideaworx-io-tls
+status:
+  loadBalancer: {}

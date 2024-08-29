@@ -14,3 +14,5 @@ Flags:
   -i, --import-path=STRING        The custom import path (trailing /* wildcards allowed) ($GO_CPS_IMPORT_PATH)
   -r, --repository=STRING         The VCS repository associated with the import path (trailing /* wildcards allowed) ($GO_CPS_REPOSITORY)
 ```
+
+`example.yaml` is an example k8s manifest used to deploy

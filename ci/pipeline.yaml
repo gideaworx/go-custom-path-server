@@ -33,7 +33,7 @@ resources:
   - name: target-registry
     type: registry-image
     source:
-      repository: registry.lab.verysmart.house/library/go-custom-path-server
+      repository: registry.lab.verysmart.house/images/go-custom-path-server
       username: ((harbor-user))
       password: ((harbor-password))
 
